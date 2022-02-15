@@ -1,26 +1,30 @@
-import React from 'react';
-import logo from './logo.svg';
+import React from "react-router-dom";
 import './App.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import {useEffect} from "react";
+import TokenService from "./services/TokenService";
+import LandingPage from "./pages/LandingPage";
+const Cookies = require('js-cookie');
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+    useEffect(() => {
+        getToken();
+    }, []);
+
+    function getToken() {
+        TokenService.getToken().then((response: any) => {
+          if (response?.status === 200) {
+              Cookies.set('access_token', response.data.access_token);
+          }
+        });
+    }
+
+    return (
+        <div className="container-fluid">
+            <LandingPage/>
+        </div>
+    );
 }
 
 export default App;
