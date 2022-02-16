@@ -3,13 +3,14 @@ import {useEffect, useState} from "react";
 import {useSelector, useDispatch} from 'react-redux'
 import {applyDrag} from "../helpers/AddQueryParams";
 import SpotifyService from "../services/SpotifyService";
-import {setPlaylist, setUserPlaylist} from "../redux/stores/playlist/PlaylistReducer";
+import {errorHandler, setPlaylist, setUserPlaylist} from "../redux/stores/playlist/PlaylistReducer";
 import {Container, Draggable} from "react-smooth-dnd";
 import {DraggableColumns} from "../interfaces/DraggableColumns";
 import {DraggableItem} from "../interfaces/DraggableItem";
 import {RootState} from "../redux/stores/playlist/PlaylistStore";
 import DraggableCard from "../components/DraggableCard";
 import TokenService from "../services/TokenService";
+import  {useNavigate} from 'react-router-dom'
 
 const Cookies = require('js-cookie');
 
@@ -41,6 +42,8 @@ function LandingPage() {
 
     const dispatch: any = useDispatch();
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         getToken();
     }, []);
@@ -58,7 +61,10 @@ function LandingPage() {
                 Cookies.set('access_token', response.data.access_token);
                 getAllSpotifyPlaylist();
             }
-        });
+        }).catch((err: any) => {
+            dispatch(errorHandler(`Unable to fetch token with status ${err?.response?.status}`))
+            navigate('/error')
+        });;
     }
 
     /**
@@ -75,6 +81,9 @@ function LandingPage() {
             }
             SpotifyService.getSpotifyPlaylist(params).then((response: any) => {
                 setDraggableColumns(response?.data?.playlists?.items)
+            }).catch((err: any) => {
+                dispatch(errorHandler(`Unable to fetch playlist with status ${err.response.status}`))
+                navigate('/error')
             });
         } else {
             const preselectedDraggableData = JSON.parse(localStorage.getItem('draggableData') as string)
@@ -160,16 +169,6 @@ function LandingPage() {
     }
 
     /**
-     * @param dropResult: provides details of column rearrangement while drop
-     * setter for dropped column
-     */
-    function onColumnDrop(dropResult: any) {
-        const scene = Object.assign({}, draggableData);
-        scene.children = applyDrag(scene.children, dropResult);
-        setDraggableData(scene)
-    }
-
-    /**
      * @param columnId: columnId where card is dropped
      * @param dropResult: provides details about card dropped
      * setter for dropped card
@@ -194,7 +193,6 @@ function LandingPage() {
             <Container
                 orientation="horizontal"
 
-                onDrop={onColumnDrop}
                 dragHandleSelector=".column-drag-handle"
                 dropPlaceholder={{
                     animationDuration: 150,
@@ -205,7 +203,7 @@ function LandingPage() {
                 {draggableData?.children.map((column: any) => {
                     return (
                         <Draggable key={column.id}>
-                            <div className={column.props.className + ' p-3 pt-5 w-100'}>
+                            <div className={column.props.className + ' p-3 pt-5'}>
                                 <div className="card-column-header ">
                                     <span className="column-drag-handle">&#x2630;</span>
                                     <span>{column.name}</span>
@@ -234,7 +232,9 @@ function LandingPage() {
                                                 </div>
                                             </Draggable>
                                         );
-                                    }) : <span>No records</span>}
+                                    }) : <div className="p-5">
+                                        <span className="p-5">No records</span>
+                                    </div>}
                                 </Container>
                             </div>
                         </Draggable>

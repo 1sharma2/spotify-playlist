@@ -6,7 +6,6 @@ const Cookies = require('js-cookie');
 
 async function getSpotifyPlaylist(params: Object): Promise<object> {
     const token = Cookies.get('access_token');
-    console.log(token,'tttt')
     const headers = {
         'Content-Type': 'application/json',
         'Authorization': "Bearer " + token

@@ -1,6 +1,16 @@
-# Getting Started with Create React App
+# Spotify Playlist
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+## Description
+
+This project was bootstrapped with [TypeScript + React](https://github.com/facebook/create-react-app).
+
+[Redux Toolkit](https://redux-toolkit.js.org/) is used as a state management system for the application.
+
+The web app store user’s saved playlist and show the previously saved list even after a page refresh. 
+
+This project is a basic implementation of front-end tech stack mentioned with best practices so that project
+can be scalable, maintainable and testable.
 
 ## Available Scripts
 
@@ -44,3 +54,7 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+To learn React, check out the [Redux Toolkit](https://redux-toolkit.js.org/).
+
+To learn React, check out the [TypeScript](https://www.typescriptlang.org/).

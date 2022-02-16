@@ -7,7 +7,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 interface PlaylistState {
     playlist: Array<Object>,
-    userPlaylist: Array<Object>
+    userPlaylist: Array<Object>,
+    error: string
 }
 
 /**
@@ -16,7 +17,8 @@ interface PlaylistState {
 
 const initialState: PlaylistState = {
     playlist: [],
-    userPlaylist: []
+    userPlaylist: [],
+    error: ''
 }
 
 export const playlistReducer = createSlice({
@@ -32,10 +34,13 @@ export const playlistReducer = createSlice({
             localStorage.setItem('userPlaylist', JSON.stringify(action.payload))
 
         },
+        errorHandler: (state, action) => {
+            state.error = action.payload
+        },
     },
 })
 
 // Action creators are generated for each case reducer function
-export const { setPlaylist, setUserPlaylist } = playlistReducer.actions
+export const { setPlaylist, setUserPlaylist, errorHandler} = playlistReducer.actions
 
 export default playlistReducer.reducer
