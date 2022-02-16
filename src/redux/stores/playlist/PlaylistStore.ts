@@ -1,6 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit'
 import {playlistReducer} from "./PlaylistReducer";
-import {combineReducers} from 'redux'
 
 const playlistStore = configureStore({
     reducer: {

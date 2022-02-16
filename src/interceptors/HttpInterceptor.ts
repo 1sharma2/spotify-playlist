@@ -1,7 +1,7 @@
 import {AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse} from "axios";
 
 /**
- * This interceptor intercepts all HTTP calls inside application and can be
+ * This interceptor intercepts all HTTP calls inside application and can be used for error handling
  */
 
 const onRequest = (config: AxiosRequestConfig): AxiosRequestConfig => {

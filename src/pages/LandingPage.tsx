@@ -3,12 +3,15 @@ import {useEffect, useState} from "react";
 import {useSelector, useDispatch} from 'react-redux'
 import {applyDrag} from "../helpers/AddQueryParams";
 import SpotifyService from "../services/SpotifyService";
-import {setPlaylist} from "../redux/stores/playlist/PlaylistReducer";
+import {setPlaylist, setUserPlaylist} from "../redux/stores/playlist/PlaylistReducer";
 import {Container, Draggable} from "react-smooth-dnd";
 import {DraggableColumns} from "../interfaces/DraggableColumns";
 import {DraggableItem} from "../interfaces/DraggableItem";
 import {RootState} from "../redux/stores/playlist/PlaylistStore";
+import DraggableCard from "../components/DraggableCard";
+import TokenService from "../services/TokenService";
 
+const Cookies = require('js-cookie');
 
 function LandingPage() {
 
@@ -34,46 +37,73 @@ function LandingPage() {
 
     const [draggableData, setDraggableData] = useState<DraggableColumns>()
 
-    const { playlist, userPlaylist } = useSelector((state: RootState) => state.playlistReducer)
+    const {playlist} = useSelector((state: RootState) => state.playlistReducer)
 
     const dispatch: any = useDispatch();
 
     useEffect(() => {
-        setTimeout(() => {
-            getAllSpotifyPlaylist();
-        }, 3000)
+        getToken();
     }, []);
 
     useEffect(() => {
-        if (playlist) {
-            setDraggableColumns()
+        if (draggableData) {
+            dispatch(setUserPlaylist(draggableData.children[1].children))
         }
-    }, [playlist])
+    }, [draggableData])
 
-    function getAllSpotifyPlaylist(): void {
-        const params = {
-            limit: 50,
-            offset: 0,
-            country: 'IN'
-        }
-        SpotifyService.getSpotifyPlaylist(params).then((response: any) => {
-            dispatch(setPlaylist(response?.data?.playlists?.items))
+
+    function getToken() {
+        TokenService.getToken().then((response: any) => {
+            if (response?.status === 200) {
+                Cookies.set('access_token', response.data.access_token);
+                getAllSpotifyPlaylist();
+            }
         });
     }
 
-    function setDraggableColumns() {
+    /**
+     * fetches all spotify playlists and store them in PlaylistStore
+     */
+    function getAllSpotifyPlaylist(): void {
+        const preSelectedPlaylist: Array<Object> = JSON.parse(localStorage.getItem('userPlaylist') as string);
+        const prePlaylist: Array<Object> = JSON.parse(localStorage.getItem('playlist') as string);
+        if (!preSelectedPlaylist || preSelectedPlaylist?.length == 0) {
+            const params = {
+                limit: 50,
+                offset: 0,
+                country: 'IN'
+            }
+            SpotifyService.getSpotifyPlaylist(params).then((response: any) => {
+                setDraggableColumns(response?.data?.playlists?.items)
+            });
+        } else {
+            const preselectedDraggableData = JSON.parse(localStorage.getItem('draggableData') as string)
+            preselectedDraggableData.children[1].children = preSelectedPlaylist;
+            preselectedDraggableData.children[0].children = prePlaylist;
+            setDraggableData(preselectedDraggableData);
+        }
+    }
+
+    /**
+     * setter for draggable columns
+     */
+    function setDraggableColumns(data: Array<Object>) {
         let columnItem: DraggableColumns = {
             type: 'container',
             props: {
                 "orientation": "horizontal"
             },
-            children: setColumnData()
+            children: setColumnData(data)
         };
 
         setDraggableData(columnItem);
+        localStorage.setItem('draggableData', JSON.stringify(columnItem));
     }
 
-    function setColumnData(): Array<DraggableItem> {
+    /**
+     * setter for each column data
+     */
+    function setColumnData(data: Array<Object>): Array<DraggableItem> {
         let columnData: Array<DraggableItem> = [];
 
         columnNames.map((columnName: string, columnIndex: number) => {
@@ -85,7 +115,7 @@ function LandingPage() {
                     orientation: "vertical",
                     className: "card-container"
                 },
-                children: setInitialColumnData(columnIndex)
+                children: setInitialColumnData(columnIndex, data)
             };
             columnData.push(item);
         })
@@ -93,10 +123,13 @@ function LandingPage() {
         return columnData;
     }
 
-    function setInitialColumnData(columnIndex: number): Array<Object> {
-        const items: Array<Object> = [];
-        const mappingArray: Array<Object> = columnIndex < columnNames.length - 1 ? playlist : userPlaylist
-            playlist.map((playlist: any, playlistIndex: number) => {
+    /**
+     * @param columnIndex: takes columnIndex as input and set card data for that column
+     */
+    function setInitialColumnData(columnIndex: number, data: Array<Object>): Array<Object> {
+        let items: Array<Object> = [];
+        if (columnIndex < columnNames.length - 1) {
+            data.map((playlist: any, playlistIndex: number) => {
                 const item: Object = {
                     name: playlist.name,
                     data: playlist.description,
@@ -108,21 +141,39 @@ function LandingPage() {
                     },
                     imageUrl: playlist?.images[0]?.url
                 }
-                items.push(item);
-            })
+                items.push(item)
+            });
+            dispatch(setPlaylist(items))
+        }
+
         return items;
     }
 
+    /**
+     * @param columnId: draggable columnId
+     * @param index: index of draggable column
+     *
+     * fetch data of column on the basis of parameters
+     */
     function getCardPayload(columnId: any, index: any) {
         return draggableData?.children.filter(p => p.id === columnId)[0].children[index];
     }
 
+    /**
+     * @param dropResult: provides details of column rearrangement while drop
+     * setter for dropped column
+     */
     function onColumnDrop(dropResult: any) {
         const scene = Object.assign({}, draggableData);
         scene.children = applyDrag(scene.children, dropResult);
         setDraggableData(scene)
     }
 
+    /**
+     * @param columnId: columnId where card is dropped
+     * @param dropResult: provides details about card dropped
+     * setter for dropped card
+     */
     function onCardDrop(columnId: any, dropResult: any) {
         if (dropResult.removedIndex !== null || dropResult.addedIndex !== null) {
             const scene = Object.assign({}, draggableData);
@@ -132,6 +183,8 @@ function LandingPage() {
             const newColumn = Object.assign({}, column);
             newColumn.children = applyDrag(newColumn.children, dropResult);
             scene.children.splice(columnIndex, 1, newColumn);
+            dispatch(setUserPlaylist(draggableData?.children[1].children))
+            dispatch(setPlaylist(draggableData?.children[0].children))
             setDraggableData(scene)
         }
     }
@@ -140,6 +193,7 @@ function LandingPage() {
         <div className="card-scene">
             <Container
                 orientation="horizontal"
+
                 onDrop={onColumnDrop}
                 dragHandleSelector=".column-drag-handle"
                 dropPlaceholder={{
@@ -176,14 +230,7 @@ function LandingPage() {
                                         return (
                                             <Draggable className="mt-2" key={card.id}>
                                                 <div  {...card.props}>
-                                                    <div className="row">
-                                                        <div className="col-lg-3">
-                                                            <img src={card.imageUrl} className="w-100 fixed-size " alt="playlist-logo"/>
-                                                        </div>
-                                                        <div className="col-lg-8">
-                                                            <p className="p-2">{card.data}</p>
-                                                        </div>
-                                                    </div>
+                                                    <DraggableCard cardDetails={card}/>
                                                 </div>
                                             </Draggable>
                                         );
