@@ -226,7 +226,7 @@ function LandingPage() {
                                     }}
                                     dropPlaceholderAnimationDuration={200}
                                 >
-                                    {column.children.map((card: any) => {
+                                    {column.children.length > 0 ? column.children.map((card: any) => {
                                         return (
                                             <Draggable className="mt-2" key={card.id}>
                                                 <div  {...card.props}>
@@ -234,7 +234,7 @@ function LandingPage() {
                                                 </div>
                                             </Draggable>
                                         );
-                                    })}
+                                    }) : <span>No records</span>}
                                 </Container>
                             </div>
                         </Draggable>
