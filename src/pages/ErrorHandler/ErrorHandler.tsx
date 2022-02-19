@@ -1,6 +1,6 @@
 import React from "react-router-dom";
 import {useSelector} from "react-redux";
-import {RootState} from "../redux/stores/playlist/PlaylistStore";
+import {RootState} from "../../redux/stores/playlist/PlaylistStore";
 import {useNavigate} from 'react-router-dom';
 
 function ErrorHandler() {

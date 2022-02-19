@@ -1,6 +1,6 @@
-import http from '../helpers/HttpCommon';
+import http from '../Utils/HttpCommon';
 import {API_BASE_URL, SPOTIFY_TOKEN_URL, CLIENT_SECRET_BASE64} from "../constants/constants";
-import {encodeQueryData} from "../helpers/AddQueryParams";
+import {encodeQueryData} from "../Utils/AddQueryParams";
 const Cookies = require('js-cookie');
 
 

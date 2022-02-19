@@ -1,4 +1,4 @@
-import http from '../helpers/HttpCommon';
+import http from '../Utils/HttpCommon';
 import {SPOTIFY_TOKEN_URL, CLIENT_SECRET_BASE64} from "../constants/constants";
 
 async function getToken(): Promise<object> {

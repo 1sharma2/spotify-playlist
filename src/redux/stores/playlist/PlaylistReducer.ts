@@ -1,4 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import {createSlice, PayloadAction} from '@reduxjs/toolkit'
+import {DraggableColumns} from "../../../interfaces/DraggableColumns";
+import {DraggableItem} from "../../../interfaces/DraggableItem";
 
 
 /**
@@ -6,8 +8,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
  */
 
 interface PlaylistState {
-    playlist: Array<Object>,
-    userPlaylist: Array<Object>,
+    spotifyAndUserPlaylistData: DraggableColumns,
     error: string
 }
 
@@ -15,9 +16,12 @@ interface PlaylistState {
  *Define the initial state using that type
  */
 
-const initialState: PlaylistState = {
-    playlist: [],
-    userPlaylist: [],
+const initialState: PlaylistState = { // create a new file for initial states
+    spotifyAndUserPlaylistData: {
+        type: '',
+        props: {},
+        children: []
+    },
     error: ''
 }
 
@@ -25,14 +29,11 @@ export const playlistReducer = createSlice({
     name: 'playlist',
     initialState,
     reducers: {
-        setPlaylist: (state, action) => {
-            state.playlist = action.payload
-            localStorage.setItem('playlist', JSON.stringify(action.payload))
-        },
-        setUserPlaylist: (state, action) => {
-            state.userPlaylist = action.payload
-            localStorage.setItem('userPlaylist', JSON.stringify(action.payload))
-
+        setDraggablePlaylistData: (state, action) => {
+            if (action.payload) {
+                state.spotifyAndUserPlaylistData = action.payload
+                localStorage.setItem('spotifyAndUserPlaylistData', JSON.stringify(action.payload))
+            }
         },
         errorHandler: (state, action) => {
             state.error = action.payload
@@ -41,6 +42,6 @@ export const playlistReducer = createSlice({
 })
 
 // Action creators are generated for each case reducer function
-export const { setPlaylist, setUserPlaylist, errorHandler} = playlistReducer.actions
+export const {setDraggablePlaylistData, errorHandler} = playlistReducer.actions
 
 export default playlistReducer.reducer
