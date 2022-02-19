@@ -83,7 +83,6 @@ export function setColumnData(data: Array<Object>, columnNames: Array<string>): 
         };
         columnData.push(item);
     })
-    console.log(columnData, 'cccccc')
     return columnData;
 }
 
