@@ -16,7 +16,7 @@ interface PlaylistState {
  *Define the initial state using that type
  */
 
-const initialState: PlaylistState = { // create a new file for initial states
+const initialState: PlaylistState = {
     spotifyAndUserPlaylistData: {
         type: '',
         props: {},
